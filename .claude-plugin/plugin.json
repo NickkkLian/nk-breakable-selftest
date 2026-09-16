@@ -1,0 +1,19 @@
+{
+  "name": "nk-breakable-selftest",
+  "description": "Make a checker, validator, linter, gate or test suite prove it can fail.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Nick Lian",
+    "url": "https://github.com/NickkkLian"
+  },
+  "homepage": "https://github.com/NickkkLian/nk-breakable-selftest",
+  "repository": "https://github.com/NickkkLian/nk-breakable-selftest",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "agent-skills",
+    "selftest",
+    "mutation",
+    "testing"
+  ]
+}
