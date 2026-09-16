@@ -12,6 +12,8 @@ metadata:
 red. If it stays green, the self-test is decoration and its green light is worse than no light: it stops
 people from doubting.
 
+> **Paths.** Commands in this skill start with `${…SKILL_DIR}`: this skill's own folder, the one that contains this SKILL.md. Claude Code fills it in. If your agent shows the placeholder as written (Codex, Cursor, Gemini CLI and others), replace it with that folder's absolute path before you run the command. Left as it is, it expands to nothing and the path breaks.
+
 ## When this applies
 
 - You wrote or changed a checker, validator, linter, gate, hook or test file.
@@ -31,7 +33,9 @@ people from doubting.
    - Python checker with a `--selftest` (or any command that exits 0 when green):
      `python3 ${CLAUDE_SKILL_DIR}/scripts/breakcheck.py --root <dir> --cmd "python3 checker.py --selftest" --auto checker.py`
      Every line matching `--pattern` (default: `append((`, `assert`, `raise`, `sys.exit(1)`, `return 1`) is
-     neutralised one at a time in a sandbox copy.
+     neutralised one at a time in a sandbox copy. If no line matches, the run stops with exit 2 ("0 mutations …
+     proves nothing"): pass a `--pattern` for this checker's style, e.g. `'print\("FAIL|findings\.append\('`,
+     or write the breaks with `--spec`.
    - Any language, hand-picked breaks: write `mutations.json`
      (`{"mutations":[{"name":..,"file":..,"find":..,"replace":..,"must_mention":..}]}`) and run with `--spec`.
    - The script's own `--selftest` runs first and aborts everything if it fails.

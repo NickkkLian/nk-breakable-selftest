@@ -14,7 +14,8 @@ things must hold (a "break matrix"):
           matches --pattern (default: append((, assert, raise, sys.exit(1), return 1); a mutation that leaves
           the self-test green is reported as UNCOVERED — the line is decorative or the self-test has no
           sample for it. A mutation that produces a traceback is reported as CRASH (not a detection).
-Exit: 0 every mutation caught and control green · 1 otherwise · 2 self-test failed / usage error.
+Exit: 0 every mutation caught and control green · 1 otherwise · 2 self-test failed / usage error / zero mutations
+(a matrix that broke nothing proves nothing, so it is never green).
 """
 import argparse, json, os, re, shutil, subprocess, sys, tempfile
 
@@ -93,6 +94,11 @@ def matrix(root, cmd, mutations, auto=False):
 
 
 def report(rows):
+    if len(rows) <= 1:                                   # only the control ran: nothing was broken, so nothing is proven
+        print(f"  {'✔' if rows and rows[0][2] == 'ok' else '✘'} control only")
+        print("✘ 0 mutations — nothing was broken, so this proves nothing. With --auto, pass --pattern for this file's "
+              "style (e.g. 'print\\(\"FAIL|findings\\.append\\(') or write the mutations with --spec.")
+        return 2
     bad = [r for r in rows if r[2] not in ("ok", "CAUGHT")]
     w = max(len(r[0]) for r in rows)
     for name, colour, verdict in rows:
@@ -145,6 +151,10 @@ def selftest():
     chk(v["syntax error"] == "CRASH", f"spec: a syntax error is CRASH, not a detection ({v['syntax error']})")
     chk(v["wrong anchor"].startswith("BAD-ANCHOR"), f"spec: a missing anchor is refused ({v['wrong anchor'][:10]})")
     chk(v["red elsewhere"] == "RED-ELSEWHERE", f"spec: red on the wrong assertion is RED-ELSEWHERE ({v['red elsewhere']})")
+    import contextlib, io
+    with contextlib.redirect_stdout(io.StringIO()) as quiet:
+        zero = report(matrix(tmp, cmd, auto_mutations(tmp, "checker.py", r"NO_LINE_MATCHES_THIS"), auto=True))
+    chk(zero == 2 and "proves nothing" in quiet.getvalue(), f"zero candidate lines is exit 2 'proves nothing', never a green 0 mutations ({zero})")
     rows = matrix(tmp, f"{sys.executable} -c 'import sys; sys.exit(1)'", spec[:1])
     chk(rows[0][2] == "CONTROL-RED" and rows[1][2] == "CONTROL-RED", "an always-red command is reported as CONTROL-RED, never as caught")
     shutil.rmtree(tmp, ignore_errors=True)
