@@ -13,7 +13,7 @@ Part of [nickkk-skills](https://github.com/NickkkLian/nickkk-skills) — skills 
 
 - Run a **break matrix**: mutate the guarded code one line at a time in a sandbox; the self-test must go red on the named assertion, never via a crash, and the unmutated control must stay green.
 - Find **decorative checks**: lines whose removal leaves the self-test green.
-- Ten design rules for detectors and guardrails (`references/design-rules.md`), each tied to a real incident (`references/incidents.md`).
+- Ten design rules for detectors and guardrails (`references/design-rules.md`); the incidents behind four of them (rules 1, 2, 3 and 8) are written up in `references/incidents.md`.
 
 The full procedure, the boundaries and where the rules came from are in [SKILL.md](SKILL.md).
 
@@ -25,6 +25,14 @@ The full procedure, the boundaries and where the rules came from are in [SKILL.m
 4. Run the break matrix
 5. Read the verdicts
 6. Pick break points that can actually change behaviour
+
+## Why it is built this way
+
+**The idea.** A self-test that cannot be made to fail proves nothing. Break the line it guards; the self-test must go red.
+
+**Where it came from.** Own practice, 2026-08 to 2026-09: the rule came from a detector whose self-test stayed green while the real run emitted 266 false positives, and was refined by the cases in `references/incidents.md`.
+
+**Evidence.** What was broken on purpose to show that the self-tests can fail is under [Verify](#verify); what was run end to end, and in which agent, is under [Compatibility](#compatibility).
 
 ## Install
 
