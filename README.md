@@ -26,6 +26,11 @@ The full procedure, the boundaries and where the rules came from are in [SKILL.m
 5. Read the verdicts
 6. Pick break points that can actually change behaviour
 
+With `--spec`, `must_mention` counts only on failure lines: the first non-space character is `✘`, `✗`
+or `×`, or the first word is FAIL, FAILED, FAILURE or ERROR (any case, optionally followed by `:`).
+A name on a passing line cannot satisfy it. Output with no failure lines cannot satisfy it either;
+a red run without a crash then reads `RED-ELSEWHERE`.
+
 ## Why it is built this way
 
 **The idea.** A self-test that cannot be made to fail proves nothing. Break the line it guards; the self-test must go red.
