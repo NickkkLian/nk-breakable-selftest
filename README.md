@@ -1,11 +1,46 @@
 # nk-breakable-selftest
 
-![nk-breakable-selftest](https://raw.githubusercontent.com/NickkkLian/nickkk-skills/main/gallery/social/nk-breakable-selftest.png)
-
 An agent skill for [Claude Code](https://code.claude.com) and [OpenAI Codex](https://developers.openai.com/codex). Make a checker, validator, linter, gate or test suite prove it can fail.
+
+**What you get.** One real run of nk-breakable-selftest 0.1.3, copied from the terminal on 2026-09-30:
+
+```text
+$ python3 scripts/breakcheck.py --demo
+demo: a 12-line checker with rule A and rule B; its self-test has a sample for rule A only
+$ python3 checker.py --selftest   →  selftest ok (exit 0)
+$ breakcheck.py --root . --cmd "python3 checker.py --selftest" --auto checker.py --pattern '\.append\(\('
+  ✔ control (no mutation)            green  ok
+  ✔ L5: out.append(("A", "rule A"))  red    CAUGHT
+  ✘ L7: out.append(("B", "rule B"))  green  UNCOVERED
+✘ 2 mutations, 1 problem — UNCOVERED = decorative check or missing sample; CRASH = mutation invalid, not a detection
+```
+
+![nk-breakable-selftest](https://raw.githubusercontent.com/NickkkLian/nickkk-skills/main/gallery/social/nk-breakable-selftest.png)
 
 Part of [nickkk-skills](https://github.com/NickkkLian/nickkk-skills) — skills that stop an AI coding agent's
 "done, tested, safe" from being taken on faith.
+
+## Try it
+
+Nothing is installed and nothing under `~/.claude` changes: clone, run the self-test, run the example (it only writes inside the clone).
+
+```bash
+git clone https://github.com/NickkkLian/nk-breakable-selftest && cd nk-breakable-selftest
+python3 scripts/breakcheck.py --selftest
+python3 scripts/breakcheck.py --demo
+```
+
+The self-test prints:
+
+```text
+breakcheck selftest · 23/23 passed
+```
+
+The last command prints the block at the top of this page; its last line is the one below, and its exit code is 1 (non-zero on purpose: it found something).
+
+```text
+✘ 2 mutations, 1 problem — UNCOVERED = decorative check or missing sample; CRASH = mutation invalid, not a detection
+```
 
 ![nk-breakable-selftest demo: before and after](https://raw.githubusercontent.com/NickkkLian/nickkk-skills/main/gallery/nk-breakable-selftest.gif)
 
@@ -13,18 +48,20 @@ Part of [nickkk-skills](https://github.com/NickkkLian/nickkk-skills) — skills 
 
 - Run a **break matrix**: mutate the guarded code one line at a time in a sandbox; the self-test must go red on the named assertion, never via a crash, and the unmutated control must stay green.
 - Find **decorative checks**: lines whose removal leaves the self-test green.
+- `--demo` runs the matrix on a bundled 12-line checker, so you can see a CAUGHT and an UNCOVERED in two seconds.
+- Run on this repository's nine sibling skills on 2026-09-30, it found lines the self-test did not cover in seven of them: in five, the line that sets the exit code; in nk-git-guardrail-hook, both rules that read a repository (found with a hand-written `--spec`). Each sibling's Verify section now says what its break run shows, line numbers included.
 - Ten design rules for detectors and guardrails (`references/design-rules.md`); the incidents behind four of them (rules 1, 2, 3 and 8) are written up in `references/incidents.md`.
 
 The full procedure, the boundaries and where the rules came from are in [SKILL.md](SKILL.md).
 
 ## How it works
 
-1. Same code path
-2. One sample per rule, exclusive
-3. A clean control
-4. Run the break matrix
-5. Read the verdicts
-6. Pick break points that can actually change behaviour
+1. Same code path. The self-test must call the production function(s).
+2. One sample per rule, exclusive. Every rule gets a sample that trips *only* that rule.
+3. A clean control. One sample that must produce zero findings.
+4. Run the break matrix. `python3 scripts/breakcheck.py --root <dir> --cmd "python3 checker.py --selftest" --auto checker.py`.
+5. Read the verdicts. `CAUGHT` is the only good one.
+6. Pick break points that can actually change behaviour.
 
 With `--spec`, `must_mention` counts only on failure lines: the first non-space character is `✘`, `✗`
 or `×`, or the first word is FAIL, FAILED, FAILURE or ERROR (any case, optionally followed by `:`).
@@ -116,13 +153,20 @@ In this skill's Codex run, every call into the skill folder's scripts/ used that
 python3 scripts/breakcheck.py --selftest
 ```
 
-Standard library only, Python 3.9+. Before publishing, the guarded lines of each script were
-mutated one at a time in a sandbox copy and the self-test was confirmed to go red on the named
-assertion, without a traceback; the unmutated control stayed green.
+Standard library only, Python 3.9+. On 2026-09-30 every self-test above passed, and
+`breakcheck.py` from [nk-breakable-selftest](https://github.com/NickkkLian/nk-breakable-selftest) broke each script on purpose in a sandbox copy (the tool run on itself):
+
+- `breakcheck.py`: 6 lines broken one at a time; each turned the self-test red without a traceback.
+
+The unmutated control stayed green every time. Only lines that record a finding, raise, or return a failing exit code
+were broken (the tool's pattern, or the hand-written list); a line number refers to the script as shipped in this version.
+This shows those lines are covered. It does not show that nothing else can fail.
 
 ## Limits
 
 - `--auto` only understands Python line structure; for shell/JS/other files use `--spec`.
+- `--auto` skips docstrings (0.1.3); a pattern word inside any other string still counts as a line.
+- To see a matrix before pointing it at your own code: `python3 ${CLAUDE_SKILL_DIR}/scripts/breakcheck.py --demo`.
 - Point `--auto` at the file that does the checking, not at the self-test's own assertions: neutralising an assertion can only make the self-test *more* lenient, so every such row reads UNCOVERED by construction.
 - Neutralising a line that is part of a multi-line expression yields `CRASH`; use `--spec` for those.
 - The matrix proves the self-test reacts to the breaks you listed. It says nothing about failure modes nobody wrote a rule for (see rule 8).
