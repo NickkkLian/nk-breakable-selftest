@@ -2,7 +2,7 @@
 
 An agent skill for [Claude Code](https://code.claude.com) and [OpenAI Codex](https://developers.openai.com/codex). Make a checker, validator, linter, gate or test suite prove it can fail.
 
-**What you get.** One real run of nk-breakable-selftest 0.1.3, copied from the terminal on 2026-09-30:
+**What you get.** One real run of nk-breakable-selftest 0.1.4, copied from the terminal on 2026-10-01:
 
 ```text
 $ python3 scripts/breakcheck.py --demo
@@ -49,10 +49,24 @@ The last command prints the block at the top of this page; its last line is the 
 - Run a **break matrix**: mutate the guarded code one line at a time in a sandbox; the self-test must go red on the named assertion, never via a crash, and the unmutated control must stay green.
 - Find **decorative checks**: lines whose removal leaves the self-test green.
 - `--demo` runs the matrix on a bundled 12-line checker, so you can see a CAUGHT and an UNCOVERED in two seconds.
-- Run on this repository's nine sibling skills on 2026-09-30, it found lines the self-test did not cover in seven of them: in five, the line that sets the exit code; in nk-git-guardrail-hook, both rules that read a repository (found with a hand-written `--spec`). Each sibling's Verify section now says what its break run shows, line numbers included.
+- One break run, on 2026-09-30, of the author's ten published checking tools (this one included; thirteen scripts, default settings): in eight scripts at least one switched-off line went unnoticed or crashed, and in four of them it was the line that sets the exit code (`publish_gate.py`, `evidence.py`, `indent_guard.py`, `rules_check.py`). All four have a sample now. The run after those fixes found a fifth exit-code line, in nk-handoff-package's `handback_check.py`; it is still open and named in that README. Both raw outputs ship in [nk-deck](https://github.com/NickkkLian/nk-deck)'s `references/example-data/`, and each tool's Verify section says what its own break run shows, line numbers included.
+- A hand-written `--spec` on nk-git-guardrail-hook found that the two rules that read a repository had no sample at all.
 - Ten design rules for detectors and guardrails (`references/design-rules.md`); the incidents behind four of them (rules 1, 2, 3 and 8) are written up in `references/incidents.md`.
 
 The full procedure, the boundaries and where the rules came from are in [SKILL.md](SKILL.md).
+
+## Next to mutmut and cosmic-ray
+
+This is mutation testing, and the Python tools people know for it are [mutmut](https://github.com/boxed/mutmut) and
+[cosmic-ray](https://github.com/sixty-north/cosmic-ray) (Stryker does it for JavaScript, C# and Scala). They change a whole codebase
+with many operators (a flipped comparison, a changed constant, a swapped operator), run your test suite against every mutant and
+report which mutants survived. If you have a package and a test suite, use one of them: they find far more than this does.
+`breakcheck.py` is for the smaller case they are not built around, a single script whose only test is its own `--selftest`.
+It is one file with no install and no test runner. It has one operator: it switches off the lines that report (a finding recorded,
+a failing exit code returned), one at a time. It keeps a crash apart from a catch: a mutant that ends in a traceback is listed as
+`CRASH`, not as caught. With `--spec` it also checks that the red names the check that was broken. It says nothing about the logic
+between the reporting lines. mutmut and cosmic-ray were read about (their READMEs, 2026-10-01), not installed or run here, so no
+head-to-head result is claimed.
 
 ## How it works
 
@@ -153,7 +167,7 @@ In this skill's Codex run, every call into the skill folder's scripts/ used that
 python3 scripts/breakcheck.py --selftest
 ```
 
-Standard library only, Python 3.9+. On 2026-09-30 every self-test above passed, and
+Standard library only, Python 3.9+. On 2026-10-01 every self-test above passed, and
 `breakcheck.py` from [nk-breakable-selftest](https://github.com/NickkkLian/nk-breakable-selftest) broke each script on purpose in a sandbox copy (the tool run on itself):
 
 - `breakcheck.py`: 6 lines broken one at a time; each turned the self-test red without a traceback.
