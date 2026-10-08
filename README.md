@@ -2,7 +2,7 @@
 
 An agent skill for [Claude Code](https://code.claude.com) and [OpenAI Codex](https://developers.openai.com/codex). Make a checker, validator, linter, gate or test suite prove it can fail.
 
-**What you get.** One real run of nk-breakable-selftest 0.1.4, copied from the terminal on 2026-10-01:
+**What you get.** One real run of nk-breakable-selftest 0.1.5, copied from the terminal on 2026-10-08:
 
 ```text
 $ python3 scripts/breakcheck.py --demo
@@ -167,7 +167,7 @@ In this skill's Codex run, every call into the skill folder's scripts/ used that
 python3 scripts/breakcheck.py --selftest
 ```
 
-Standard library only, Python 3.9+. On 2026-10-01 every self-test above passed, and
+Standard library only, Python 3.9+. On 2026-10-08 every self-test above passed, and
 `breakcheck.py` from [nk-breakable-selftest](https://github.com/NickkkLian/nk-breakable-selftest) broke each script on purpose in a sandbox copy (the tool run on itself):
 
 - `breakcheck.py`: 6 lines broken one at a time; each turned the self-test red without a traceback.
