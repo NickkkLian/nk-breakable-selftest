@@ -185,6 +185,10 @@ This shows those lines are covered. It does not show that nothing else can fail.
 - Neutralising a line that is part of a multi-line expression yields `CRASH`; use `--spec` for those.
 - The matrix proves the self-test reacts to the breaks you listed. It says nothing about failure modes nobody wrote a rule for (see rule 8).
 
+## Privacy
+
+This skill's script runs on your computer, started by you or by the agent you use it in. It copies the folder you name to a temporary folder (leaving out `.git`, `__pycache__` and `node_modules`), changes one line at a time in the copy, runs your own test command there and prints a table; your folder is not changed, and the copy is deleted when the run finishes. The script opens no network connection and keeps nothing; your test command does whatever it normally does, and the table is read by the agent you run it in, as part of your session with that agent. Questions: open an issue on this repository.
+
 ## License
 
 MIT. Read a script before letting it run in your environment.
